@@ -1,6 +1,6 @@
 package com.fiap_soat.hackaton_video_processing_worker_fase5.service;
 
-import com.fiap_soat.hackaton_video_processing_worker_fase5.domain.dto.VideoProcessingRequest;
+import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessingRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 

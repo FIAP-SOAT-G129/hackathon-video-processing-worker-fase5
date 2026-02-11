@@ -1,12 +1,11 @@
 package com.fiap_soat.hackaton_video_processing_worker_fase5.listener;
 
-import com.fiap_soat.hackaton_video_processing_worker_fase5.domain.dto.VideoProcessingRequest;
+import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessingRequest;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.service.VideoProcessingService;
 import lombok.AllArgsConstructor;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
