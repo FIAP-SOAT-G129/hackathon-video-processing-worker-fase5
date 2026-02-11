@@ -6,3 +6,12 @@ spring:
     port: 5672
     username: guest
     password: guest
+
+app:
+  video:
+    frames-fps: 30
+  ffmpeg:
+    path: ffmpeg
+  storage:
+    local-path: /Users/mariomendonca/Desktop
+    base-url: ""

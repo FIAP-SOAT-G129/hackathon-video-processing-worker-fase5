@@ -24,7 +24,8 @@ public class VideoProcessingListener {
                 VideoProcessingRequest.class
             );
 
-            videoProcessingService.processVideo(request);
+            String outputUrl = videoProcessingService.processVideo(request);
+            System.out.println("Video processed. Output URL: " + outputUrl);
         } catch (Exception e) {
             throw new AmqpRejectAndDontRequeueException("Invalid message payload", e);
         }
