@@ -1,0 +1,3 @@
+spring:
+  application:
+    name: hackaton-video-processing-worker-fase5
