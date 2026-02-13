@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitConfig {
     public static final String PROCESSING_QUEUE = "video.processing.queue";
     public static final String PROCESSING_ROUTING_KEY = "video.processing.request";
+    public static final String PROCESSED_QUEUE = "video.processed.queue";
+    public static final String PROCESSED_ROUTING_KEY = "video.processed";
     public static final String EXCHANGE_KEY = "video.processing.exchange";
 
     @Bean
@@ -26,5 +28,15 @@ public class RabbitConfig {
     @Bean
     Binding processingBinding() {
         return BindingBuilder.bind(processingQueue()).to(exchange()).with(PROCESSING_ROUTING_KEY);
+    }
+
+    @Bean
+    Queue processedQueue() {
+        return new Queue(PROCESSED_QUEUE);
+    }
+
+    @Bean
+    Binding processedBinding() {
+        return BindingBuilder.bind(processedQueue()).to(exchange()).with(PROCESSED_ROUTING_KEY);
     }
 }

@@ -1,6 +1,9 @@
 package com.fiap_soat.hackaton_video_processing_worker_fase5.service;
 
+import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessedMessage;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessingRequest;
+import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoStatus;
+import com.fiap_soat.hackaton_video_processing_worker_fase5.producer.VideoProcessedProducer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,7 @@ import java.util.zip.ZipOutputStream;
 public class VideoProcessingServiceImpl implements VideoProcessingService {
 
     private final VideoStorageService videoStorageService;
+    private final VideoProcessedProducer videoProcessedProducer;
 
     @Value("${app.video.frames-fps:30}")
     private int framesFps;
@@ -34,7 +38,7 @@ public class VideoProcessingServiceImpl implements VideoProcessingService {
     private String storageBaseUrl;
 
     @Override
-    public String processVideo(VideoProcessingRequest videoProcessingRequest) {
+    public void processVideo(VideoProcessingRequest videoProcessingRequest) {
         Path tempDir = null;
         try {
             Path inputPath = Path.of(videoProcessingRequest.inputVideoPath());
@@ -62,7 +66,13 @@ public class VideoProcessingServiceImpl implements VideoProcessingService {
                 storedPath = videoStorageService.store(zipStream, zipFileName);
             }
 
-            return buildOutputUrl(storedPath);
+            String outputUrl = buildOutputUrl(storedPath);
+            VideoProcessedMessage message = new VideoProcessedMessage(
+                videoProcessingRequest.videoId(),
+                outputUrl,
+                VideoStatus.DONE
+            );
+            videoProcessedProducer.sendVideoProcessedMessage(message);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Failed to process video: " + e.getMessage(), e);
