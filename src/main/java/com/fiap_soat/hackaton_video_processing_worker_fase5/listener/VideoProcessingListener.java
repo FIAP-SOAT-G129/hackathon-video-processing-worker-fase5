@@ -16,7 +16,7 @@ public class VideoProcessingListener {
     private final ObjectMapper objectMapper;
     private final VideoProcessingService videoProcessingService;
 
-    @RabbitListener(queues = "video.processing.queue")
+    @RabbitListener(queues = "${app.rabbit.processing-queue}")
     public void receiveMessage(Message message) {
         try {
             VideoProcessingRequest request = objectMapper.readValue(

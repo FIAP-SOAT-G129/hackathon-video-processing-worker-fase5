@@ -4,39 +4,49 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitConfig {
-    public static final String PROCESSING_QUEUE = "video.processing.queue";
-    public static final String PROCESSING_ROUTING_KEY = "video.processing.request";
-    public static final String PROCESSED_QUEUE = "video.processed.queue";
-    public static final String PROCESSED_ROUTING_KEY = "video.processed";
-    public static final String EXCHANGE_KEY = "video.processing.exchange";
+    @Value("${app.rabbit.processing-queue}")
+    private String processingQueue;
+
+    @Value("${app.rabbit.processing-routing-key}")
+    private String processingRoutingKey;
+
+    @Value("${app.rabbit.processed-queue}")
+    private String processedQueue;
+
+    @Value("${app.rabbit.processed-routing-key}")
+    private String processedRoutingKey;
+
+    @Value("${app.rabbit.exchange}")
+    private String exchange;
 
     @Bean
     TopicExchange exchange() {
-        return new TopicExchange(EXCHANGE_KEY);
+        return new TopicExchange(exchange);
     }
 
     @Bean
     Queue processingQueue() {
-        return new Queue(PROCESSING_QUEUE);
+        return new Queue(processingQueue);
     }
 
     @Bean
     Binding processingBinding() {
-        return BindingBuilder.bind(processingQueue()).to(exchange()).with(PROCESSING_ROUTING_KEY);
+        return BindingBuilder.bind(processingQueue()).to(exchange()).with(processingRoutingKey);
     }
 
     @Bean
     Queue processedQueue() {
-        return new Queue(PROCESSED_QUEUE);
+        return new Queue(processedQueue);
     }
 
     @Bean
     Binding processedBinding() {
-        return BindingBuilder.bind(processedQueue()).to(exchange()).with(PROCESSED_ROUTING_KEY);
+        return BindingBuilder.bind(processedQueue()).to(exchange()).with(processedRoutingKey);
     }
 }

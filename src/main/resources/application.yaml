@@ -8,10 +8,16 @@ spring:
     password: guest
 
 app:
+  rabbit:
+    processing-queue: video.processing.queue
+    processing-routing-key: video.processing.request
+    processed-queue: video.processed.queue
+    processed-routing-key: video.processed
+    exchange: video.processing.exchange
   video:
     frames-fps: 30
   ffmpeg:
     path: ffmpeg
   storage:
-    local-path: /Users/mariomendonca/Desktop
+    local-path: /Users/mariomendonca/Desktop/frames-testes
     base-url: ""
