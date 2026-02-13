@@ -13,6 +13,8 @@ app:
     processing-routing-key: video.processing.request
     processed-queue: video.processed.queue
     processed-routing-key: video.processed
+    error-queue: video.processing.error.queue
+    error-routing-key: video.processing.error
     exchange: video.processing.exchange
   video:
     frames-fps: 30

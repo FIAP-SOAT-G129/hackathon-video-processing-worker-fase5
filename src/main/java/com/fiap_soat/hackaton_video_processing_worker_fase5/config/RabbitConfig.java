@@ -22,6 +22,12 @@ public class RabbitConfig {
     @Value("${app.rabbit.processed-routing-key}")
     private String processedRoutingKey;
 
+    @Value("${app.rabbit.error-queue}")
+    private String errorQueue;
+
+    @Value("${app.rabbit.error-routing-key}")
+    private String errorRoutingKey;
+
     @Value("${app.rabbit.exchange}")
     private String exchange;
 
@@ -48,5 +54,15 @@ public class RabbitConfig {
     @Bean
     Binding processedBinding() {
         return BindingBuilder.bind(processedQueue()).to(exchange()).with(processedRoutingKey);
+    }
+
+    @Bean
+    Queue errorQueue() {
+        return new Queue(errorQueue);
+    }
+
+    @Bean
+    Binding errorBinding() {
+        return BindingBuilder.bind(errorQueue()).to(exchange()).with(errorRoutingKey);
     }
 }

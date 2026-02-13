@@ -1,8 +1,10 @@
 package com.fiap_soat.hackaton_video_processing_worker_fase5.service;
 
 import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessedMessage;
+import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessingError;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessingRequest;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoStatus;
+import com.fiap_soat.hackaton_video_processing_worker_fase5.producer.VideoProcessingErrorProducer;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.producer.VideoProcessedProducer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +29,7 @@ public class VideoProcessingServiceImpl implements VideoProcessingService {
 
     private final VideoStorageService videoStorageService;
     private final VideoProcessedProducer videoProcessedProducer;
+    private final VideoProcessingErrorProducer videoProcessingErrorProducer;
 
     @Value("${app.video.frames-fps:30}")
     private int framesFps;
@@ -67,17 +70,12 @@ public class VideoProcessingServiceImpl implements VideoProcessingService {
             }
 
             String outputUrl = buildOutputUrl(storedPath);
-            VideoProcessedMessage message = new VideoProcessedMessage(
-                videoProcessingRequest.videoId(),
-                outputUrl,
-                VideoStatus.DONE
-            );
-            videoProcessedProducer.sendVideoProcessedMessage(message);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Failed to process video: " + e.getMessage(), e);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to process video: " + e.getMessage(), e);
+            sendProcessedMessage(videoProcessingRequest, outputUrl);
+        } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            sendErrorMessage(videoProcessingRequest, e);
         } finally {
             if (tempDir != null) {
                 deleteRecursively(tempDir);
@@ -169,5 +167,27 @@ public class VideoProcessingServiceImpl implements VideoProcessingService {
         } catch (IOException e) {
             System.err.println("Failed to cleanup temp dir: " + root + " - " + e.getMessage());
         }
+    }
+
+    private void sendErrorMessage(VideoProcessingRequest request, Exception exception) {
+        String reason = exception.getMessage();
+        if (reason == null || reason.isBlank()) {
+            reason = exception.getClass().getSimpleName();
+        }
+        VideoProcessingError error = new VideoProcessingError(
+            request.videoId(),
+            VideoStatus.ERROR,
+            reason
+        );
+        videoProcessingErrorProducer.sendError(error);
+    }
+
+    private void sendProcessedMessage(VideoProcessingRequest request, String outputUrl) {
+        VideoProcessedMessage message = new VideoProcessedMessage(
+            request.videoId(),
+            outputUrl,
+            VideoStatus.DONE
+        );
+        videoProcessedProducer.sendVideoProcessedMessage(message);
     }
 }
