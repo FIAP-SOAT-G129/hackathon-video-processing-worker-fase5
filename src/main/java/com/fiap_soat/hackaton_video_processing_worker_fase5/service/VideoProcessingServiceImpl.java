@@ -7,6 +7,8 @@ import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoStatus;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.producer.VideoProcessingErrorProducer;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.producer.VideoProcessedProducer;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,7 @@ import java.util.zip.ZipOutputStream;
 @Service
 @RequiredArgsConstructor
 public class VideoProcessingServiceImpl implements VideoProcessingService {
+    private static final Logger log = LoggerFactory.getLogger(VideoProcessingServiceImpl.class);
 
     private final VideoStorageService videoStorageService;
     private final VideoProcessedProducer videoProcessedProducer;
@@ -140,7 +143,7 @@ public class VideoProcessingServiceImpl implements VideoProcessingService {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                if (builder.length() > 0) {
+                if (builder.isEmpty()) {
                     builder.append(System.lineSeparator());
                 }
                 builder.append(line);
@@ -165,7 +168,7 @@ public class VideoProcessingServiceImpl implements VideoProcessingService {
                 }
             });
         } catch (IOException e) {
-            System.err.println("Failed to cleanup temp dir: " + root + " - " + e.getMessage());
+            log.warn("Failed to cleanup temp dir: {}", root, e);
         }
     }
 

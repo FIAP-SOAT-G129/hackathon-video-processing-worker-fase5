@@ -2,6 +2,8 @@ package com.fiap_soat.hackaton_video_processing_worker_fase5.producer;
 
 import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessingError;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -12,6 +14,7 @@ import tools.jackson.databind.ObjectMapper;
 @Component
 @RequiredArgsConstructor
 public class VideoProcessingErrorProducer {
+    private static final Logger log = LoggerFactory.getLogger(VideoProcessingErrorProducer.class);
 
     private final RabbitTemplate rabbitTemplate;
     private final ObjectMapper objectMapper;
@@ -33,7 +36,7 @@ public class VideoProcessingErrorProducer {
             Message message = new Message(body, props);
             rabbitTemplate.send(exchange, errorRoutingKey, message);
         } catch (Exception e) {
-            System.err.println("Failed to send error message for videoId: " + error.videoId() + " - " + e.getMessage());
+            log.error("Failed to send error message for videoId: {}", error.videoId(), e);
         }
     }
 }
