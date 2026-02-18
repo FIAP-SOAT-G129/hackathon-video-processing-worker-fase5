@@ -1,8 +1,13 @@
 package com.fiap_soat.hackaton_video_processing_worker_fase5.service;
 
+import com.fiap_soat.hackaton_video_processing_worker_fase5.exception.FileRetrievalException;
+import com.fiap_soat.hackaton_video_processing_worker_fase5.exception.FileStorageException;
+import com.fiap_soat.hackaton_video_processing_worker_fase5.exception.StoredFileNotFoundException;
+
 import java.io.InputStream;
 
 public interface VideoStorageService {
-    String store(InputStream inputStream, String fileName);
-    InputStream retrieve(String storagePath);
+    String store(InputStream inputStream, String fileName) throws FileStorageException;
+
+    InputStream retrieve(String storagePath) throws StoredFileNotFoundException, FileRetrievalException;
 }

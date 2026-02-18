@@ -1,5 +1,8 @@
 package com.fiap_soat.hackaton_video_processing_worker_fase5.service;
 
+import com.fiap_soat.hackaton_video_processing_worker_fase5.exception.FileRetrievalException;
+import com.fiap_soat.hackaton_video_processing_worker_fase5.exception.FileStorageException;
+import com.fiap_soat.hackaton_video_processing_worker_fase5.exception.StoredFileNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +21,7 @@ public class VideoStorageServiceImpl implements VideoStorageService {
     private String storageBaseDir;
 
     @Override
-    public String store(InputStream inputStream, String fileName) {
+    public String store(InputStream inputStream, String fileName) throws FileStorageException {
         try {
             Path uploadPath = Paths.get(storageBaseDir);
             if (!Files.exists(uploadPath)) {
@@ -32,23 +35,20 @@ public class VideoStorageServiceImpl implements VideoStorageService {
 
             return filePath.toString();
         } catch (IOException e) {
-//            throw new StorageException("Could not store file: " + e.getMessage());
-            throw new RuntimeException("Could not store file: " + e.getMessage());
+            throw new FileStorageException("Could not store file: " + fileName, e);
         }
     }
 
     @Override
-    public InputStream retrieve(String storagePath) {
+    public InputStream retrieve(String storagePath) throws StoredFileNotFoundException, FileRetrievalException {
         try {
             Path filePath = Paths.get(storagePath);
             if (!Files.exists(filePath)) {
-//                throw new StorageException("File not found at path: " + storagePath);
-                throw new RuntimeException("File not found at path: " + storagePath);
+                throw new StoredFileNotFoundException("File not found at path: " + storagePath);
             }
             return Files.newInputStream(filePath);
         } catch (IOException e) {
-//            throw new StorageException("Could not retrieve file: " + e.getMessage());
-            throw new RuntimeException("Could not retrieve file: " + e.getMessage());
+            throw new FileRetrievalException("Could not retrieve file: " + storagePath, e);
         }
     }
 }

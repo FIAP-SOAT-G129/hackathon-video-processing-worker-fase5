@@ -4,6 +4,10 @@ import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessedMe
 import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessingError;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessingRequest;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoStatus;
+import com.fiap_soat.hackaton_video_processing_worker_fase5.exception.FfmpegExecutionException;
+import com.fiap_soat.hackaton_video_processing_worker_fase5.exception.FrameZipException;
+import com.fiap_soat.hackaton_video_processing_worker_fase5.exception.InputVideoNotFoundException;
+import com.fiap_soat.hackaton_video_processing_worker_fase5.exception.NoFramesExtractedException;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.producer.VideoProcessingErrorProducer;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.producer.VideoProcessedProducer;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -49,7 +54,7 @@ public class VideoProcessingServiceImpl implements VideoProcessingService {
         try {
             Path inputPath = Path.of(videoProcessingRequest.inputVideoPath());
             if (!Files.exists(inputPath)) {
-                throw new RuntimeException("Input video not found: " + inputPath);
+                throw new InputVideoNotFoundException("Input video not found: " + inputPath);
             }
 
             tempDir = Files.createTempDirectory("video-frames-" + videoProcessingRequest.videoId() + "-");
@@ -61,7 +66,7 @@ public class VideoProcessingServiceImpl implements VideoProcessingService {
 
             long frameCount = countFrames(framesDir);
             if (frameCount == 0) {
-                throw new RuntimeException("No frames extracted from video: " + inputPath);
+                throw new NoFramesExtractedException("No frames extracted from video: " + inputPath);
             }
 
             zipDirectory(framesDir, zipPath);
@@ -86,7 +91,7 @@ public class VideoProcessingServiceImpl implements VideoProcessingService {
         }
     }
 
-    private void extractFrames(Path inputPath, Path framesDir) throws IOException, InterruptedException {
+    private void extractFrames(Path inputPath, Path framesDir) throws IOException, InterruptedException, FfmpegExecutionException {
         String outputPattern = framesDir.resolve("frame_%06d.jpg").toString();
         ProcessBuilder processBuilder = new ProcessBuilder(
             ffmpegPath,
@@ -100,7 +105,7 @@ public class VideoProcessingServiceImpl implements VideoProcessingService {
         String output = readProcessOutput(process.getInputStream());
         int exitCode = process.waitFor();
         if (exitCode != 0) {
-            throw new RuntimeException("FFmpeg failed (exit " + exitCode + "): " + output);
+            throw new FfmpegExecutionException("FFmpeg failed (exit " + exitCode + "): " + output);
         }
     }
 
@@ -110,21 +115,22 @@ public class VideoProcessingServiceImpl implements VideoProcessingService {
         }
     }
 
-    private void zipDirectory(Path sourceDir, Path zipPath) throws IOException {
+    private void zipDirectory(Path sourceDir, Path zipPath) throws IOException, FrameZipException {
         try (ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(zipPath))) {
+            List<Path> framePaths;
             try (Stream<Path> paths = Files.list(sourceDir)) {
-                paths.filter(Files::isRegularFile)
-                    .sorted()
-                    .forEach(path -> {
-                        ZipEntry entry = new ZipEntry(sourceDir.relativize(path).toString());
-                        try (InputStream inputStream = Files.newInputStream(path)) {
-                            zipOutputStream.putNextEntry(entry);
-                            inputStream.transferTo(zipOutputStream);
-                            zipOutputStream.closeEntry();
-                        } catch (IOException e) {
-                            throw new RuntimeException("Failed to zip frame: " + path, e);
-                        }
-                    });
+                framePaths = paths.filter(Files::isRegularFile).sorted().toList();
+            }
+
+            for (Path path : framePaths) {
+                ZipEntry entry = new ZipEntry(sourceDir.relativize(path).toString());
+                try (InputStream inputStream = Files.newInputStream(path)) {
+                    zipOutputStream.putNextEntry(entry);
+                    inputStream.transferTo(zipOutputStream);
+                    zipOutputStream.closeEntry();
+                } catch (IOException e) {
+                    throw new FrameZipException("Failed to zip frame: " + path, e);
+                }
             }
         }
     }
