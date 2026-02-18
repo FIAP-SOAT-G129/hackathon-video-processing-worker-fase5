@@ -2,10 +2,10 @@ spring:
   application:
     name: hackaton-video-processing-worker-fase5
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${SPRING_RABBITMQ_HOST:rabbitmq}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
 
 app:
   rabbit:
@@ -21,5 +21,5 @@ app:
   ffmpeg:
     path: ffmpeg
   storage:
-    local-path: /Users/mariomendonca/Desktop/frames-testes
+    local-path: ${APP_STORAGE_LOCAL_PATH:/Users/mariomendonca/Desktop/frames-testes}
     base-url: ""
