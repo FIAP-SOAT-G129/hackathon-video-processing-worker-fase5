@@ -1,6 +1,5 @@
 package com.fiap_soat.hackaton_video_processing_worker_fase5.producer;
 
-import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessingError;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.Message;

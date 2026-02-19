@@ -1,12 +1,10 @@
 package com.fiap_soat.hackaton_video_processing_worker_fase5.service;
 
-import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessedMessage;
-import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessingError;
+import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoResultMessage;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessingRequest;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoStatus;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.exception.FileStorageException;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.producer.VideoProcessedProducer;
-import com.fiap_soat.hackaton_video_processing_worker_fase5.producer.VideoProcessingErrorProducer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -46,7 +44,7 @@ class VideoProcessingServiceImplTest {
     }
 
     @Test
-    void processVideoShouldSendProcessedMessageWhenFramesAreExtractedAndStored() throws Exception {
+    void processVideoShouldSendResultDoneMessageWhenFramesAreExtractedAndStored() throws Exception {
         StubVideoStorageService videoStorageService = new StubVideoStorageService();
         RecordingVideoProcessedProducer videoProcessedProducer = new RecordingVideoProcessedProducer();
         RecordingVideoProcessingErrorProducer videoProcessingErrorProducer = new RecordingVideoProcessingErrorProducer();
@@ -66,11 +64,11 @@ class VideoProcessingServiceImplTest {
         assertEquals(1, videoProcessedProducer.callCount);
         assertEquals(0, videoProcessingErrorProducer.callCount);
 
-        VideoProcessedMessage message = videoProcessedProducer.message;
+        VideoResultMessage message = videoProcessedProducer.message;
         assertNotNull(message);
         assertEquals("abc", message.videoId());
         assertEquals(VideoStatus.DONE, message.status());
-        assertEquals("https://files.example.com/output/abc_frames.zip", message.outputVideoPath());
+        assertEquals("https://files.example.com/output/abc_frames.zip", message.zipPath());
     }
 
     @Test
@@ -133,7 +131,7 @@ class VideoProcessingServiceImplTest {
 
         assertEquals(1, videoProcessedProducer.callCount);
         assertNotNull(videoProcessedProducer.message);
-        assertEquals("/tmp/storage/raw_frames.zip", videoProcessedProducer.message.outputVideoPath());
+        assertEquals("/tmp/storage/raw_frames.zip", videoProcessedProducer.message.zipPath());
         assertEquals(0, videoProcessingErrorProducer.callCount);
     }
 
@@ -259,16 +257,16 @@ class VideoProcessingServiceImplTest {
 
     private static class RecordingVideoProcessedProducer extends VideoProcessedProducer {
         private int callCount;
-        private VideoProcessedMessage message;
+        private VideoResultMessage message;
 
         private RecordingVideoProcessedProducer() {
             super(null, null);
         }
 
         @Override
-        public void sendVideoProcessedMessage(VideoProcessedMessage videoProcessedMessage) {
+        public void sendVideoProcessedMessage(VideoResultMessage videoResultMessage) {
             callCount++;
-            message = videoProcessedMessage;
+            message = videoResultMessage;
         }
     }
 

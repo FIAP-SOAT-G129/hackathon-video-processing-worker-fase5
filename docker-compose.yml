@@ -17,21 +17,21 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
 
-  worker:
-    image: video-processing-worker:latest
-    container_name: video-processing-worker
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: guest
-      SPRING_RABBITMQ_PASSWORD: guest
-      APP_STORAGE_LOCAL_PATH: ${APP_STORAGE_LOCAL_PATH:-/data}
-    volumes:
-      - ${APP_STORAGE_LOCAL_PATH:-./data}:/data
+#  worker:
+#    image: video-processing-worker:latest
+#    container_name: video-processing-worker
+#    depends_on:
+#      rabbitmq:
+#        condition: service_healthy
+#    environment:
+#      SPRING_RABBITMQ_HOST: rabbitmq
+#      SPRING_RABBITMQ_PORT: 5672
+#      SPRING_RABBITMQ_USERNAME: guest
+#      SPRING_RABBITMQ_PASSWORD: guest
+#      APP_STORAGE_LOCAL_PATH: ${APP_STORAGE_LOCAL_PATH:-/data}
+#    volumes:
+#      - ${APP_STORAGE_LOCAL_PATH:-./data}:/data
 
 volumes:
   rabbitmq_data:
-  worker_data:
+#  worker_data:

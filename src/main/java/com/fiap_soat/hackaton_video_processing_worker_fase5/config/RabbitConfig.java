@@ -3,6 +3,7 @@ package com.fiap_soat.hackaton_video_processing_worker_fase5.config;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -16,20 +17,17 @@ public class RabbitConfig {
     @Value("${app.rabbit.processing-routing-key}")
     private String processingRoutingKey;
 
-    @Value("${app.rabbit.processed-queue}")
-    private String processedQueue;
-
-    @Value("${app.rabbit.processed-routing-key}")
-    private String processedRoutingKey;
-
-    @Value("${app.rabbit.error-queue}")
-    private String errorQueue;
-
-    @Value("${app.rabbit.error-routing-key}")
-    private String errorRoutingKey;
-
     @Value("${app.rabbit.exchange}")
     private String exchange;
+
+    @Value("${app.rabbit.processing-dlq}")
+    private String dlq = "video.processing.dlq";
+
+    @Value("${app.rabbit.result-queue}")
+    private String resultQueue = "video.processing.result.queue";
+
+    @Value("${app.rabbit.result-routing-key}")
+    private String resultRoutingKey = "video.processing.result";
 
     @Bean
     TopicExchange exchange() {
@@ -37,8 +35,16 @@ public class RabbitConfig {
     }
 
     @Bean
-    Queue processingQueue() {
-        return new Queue(processingQueue);
+    public Queue processingQueue() {
+        return QueueBuilder.durable(processingQueue)
+            .withArgument("x-dead-letter-exchange", "")
+            .withArgument("x-dead-letter-routing-key", dlq)
+            .build();
+    }
+
+    @Bean
+    public Queue deadLetterQueue() {
+        return new Queue(dlq);
     }
 
     @Bean
@@ -47,22 +53,12 @@ public class RabbitConfig {
     }
 
     @Bean
-    Queue processedQueue() {
-        return new Queue(processedQueue);
+    public Queue resultQueue() {
+        return new Queue(resultQueue);
     }
 
     @Bean
-    Binding processedBinding() {
-        return BindingBuilder.bind(processedQueue()).to(exchange()).with(processedRoutingKey);
-    }
-
-    @Bean
-    Queue errorQueue() {
-        return new Queue(errorQueue);
-    }
-
-    @Bean
-    Binding errorBinding() {
-        return BindingBuilder.bind(errorQueue()).to(exchange()).with(errorRoutingKey);
+    Binding resultBinding() {
+        return BindingBuilder.bind(resultQueue()).to(exchange()).with(resultRoutingKey);
     }
 }

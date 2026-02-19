@@ -1,6 +1,6 @@
 package com.fiap_soat.hackaton_video_processing_worker_fase5.producer;
 
-import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessedMessage;
+import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoResultMessage;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.Message;
@@ -22,7 +22,7 @@ class VideoProcessedProducerTest {
         setField(producer, "exchange", "video.exchange");
         setField(producer, "processedRoutingKey", "video.processed");
 
-        VideoProcessedMessage payload = new VideoProcessedMessage("video-1", "/tmp/video-1.zip", VideoStatus.DONE);
+        VideoResultMessage payload = new VideoResultMessage("video-1", "/tmp/video-1.zip", VideoStatus.DONE);
         producer.sendVideoProcessedMessage(payload);
 
         assertEquals("video.exchange", rabbitTemplate.exchange);
@@ -32,7 +32,7 @@ class VideoProcessedProducerTest {
         assertEquals("utf-8", rabbitTemplate.message.getMessageProperties().getContentEncoding());
         String json = new String(rabbitTemplate.message.getBody());
         assertEquals(
-            "{\"videoId\":\"video-1\",\"outputVideoPath\":\"/tmp/video-1.zip\",\"status\":\"DONE\"}",
+            "{\"videoId\":\"video-1\",\"zipPath\":\"/tmp/video-1.zip\",\"status\":\"DONE\"}",
             json
         );
     }

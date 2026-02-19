@@ -1,14 +1,12 @@
 package com.fiap_soat.hackaton_video_processing_worker_fase5.service;
 
-import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessedMessage;
-import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessingError;
+import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoResultMessage;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessingRequest;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoStatus;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.exception.FfmpegExecutionException;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.exception.FrameZipException;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.exception.InputVideoNotFoundException;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.exception.NoFramesExtractedException;
-import com.fiap_soat.hackaton_video_processing_worker_fase5.producer.VideoProcessingErrorProducer;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.producer.VideoProcessedProducer;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -37,7 +35,6 @@ public class VideoProcessingServiceImpl implements VideoProcessingService {
 
     private final VideoStorageService videoStorageService;
     private final VideoProcessedProducer videoProcessedProducer;
-    private final VideoProcessingErrorProducer videoProcessingErrorProducer;
 
     @Value("${app.video.frames-fps:30}")
     private int framesFps;
@@ -78,7 +75,7 @@ public class VideoProcessingServiceImpl implements VideoProcessingService {
             }
 
             String outputUrl = buildOutputUrl(storedPath);
-            sendProcessedMessage(videoProcessingRequest, outputUrl);
+            sendResultDoneMessage(videoProcessingRequest, outputUrl);
         } catch (Exception e) {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
@@ -183,19 +180,21 @@ public class VideoProcessingServiceImpl implements VideoProcessingService {
         if (reason == null || reason.isBlank()) {
             reason = exception.getClass().getSimpleName();
         }
-        VideoProcessingError error = new VideoProcessingError(
+        VideoResultMessage error = new VideoResultMessage(
             request.videoId(),
+            null,
             VideoStatus.ERROR,
             reason
         );
-        videoProcessingErrorProducer.sendError(error);
+        videoProcessedProducer.sendVideoProcessedMessage(error);
     }
 
-    private void sendProcessedMessage(VideoProcessingRequest request, String outputUrl) {
-        VideoProcessedMessage message = new VideoProcessedMessage(
+    private void sendResultDoneMessage(VideoProcessingRequest request, String outputUrl) {
+        VideoResultMessage message = new VideoResultMessage(
             request.videoId(),
             outputUrl,
-            VideoStatus.DONE
+            VideoStatus.DONE,
+            null
         );
         videoProcessedProducer.sendVideoProcessedMessage(message);
     }

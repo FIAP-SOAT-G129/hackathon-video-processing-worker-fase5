@@ -1,6 +1,6 @@
 package com.fiap_soat.hackaton_video_processing_worker_fase5.producer;
 
-import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoProcessedMessage;
+import com.fiap_soat.hackaton_video_processing_worker_fase5.dto.VideoResultMessage;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,12 +22,11 @@ public class VideoProcessedProducer {
     @Value("${app.rabbit.exchange}")
     private String exchange;
 
-    @Value("${app.rabbit.processed-routing-key}")
-    private String processedRoutingKey;
+    @Value("${app.rabbit.result-routing-key}")
+    private String resultRoutingKey;
 
-
-    public void sendVideoProcessedMessage(VideoProcessedMessage videoProcessedMessage) {
-        byte[] body = objectMapper.writeValueAsBytes(videoProcessedMessage);
+    public void sendVideoProcessedMessage(VideoResultMessage videoResultMessage) {
+        byte[] body = objectMapper.writeValueAsBytes(videoResultMessage);
 
         MessageProperties props = new MessageProperties();
         props.setContentType(MessageProperties.CONTENT_TYPE_JSON);
@@ -35,7 +34,7 @@ public class VideoProcessedProducer {
 
         Message message = new Message(body, props);
 
-        rabbitTemplate.send(exchange, processedRoutingKey, message);
-        log.info("Sent processed message for videoId: {}", videoProcessedMessage.videoId());
+        rabbitTemplate.send(exchange, resultRoutingKey, message);
+        log.info("Sent processed message for video: {}", videoResultMessage);
     }
 }

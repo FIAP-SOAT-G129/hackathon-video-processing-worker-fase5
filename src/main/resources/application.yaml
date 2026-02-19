@@ -11,10 +11,9 @@ app:
   rabbit:
     processing-queue: video.processing.queue
     processing-routing-key: video.processing.request
-    processed-queue: video.processed.queue
-    processed-routing-key: video.processed
-    error-queue: video.processing.error.queue
-    error-routing-key: video.processing.error
+    result-queue: video.processing.result.queue
+    result-routing-key: video.processing.result
+    processing-dlq: video.processing.dlq
     exchange: video.processing.exchange
   video:
     frames-fps: 30
