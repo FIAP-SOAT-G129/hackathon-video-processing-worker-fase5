@@ -17,18 +17,16 @@ class RabbitConfigTest {
         setField(config, "exchange", "video.exchange");
         setField(config, "processingQueue", "video.processing.queue");
         setField(config, "processingRoutingKey", "video.processing");
-        setField(config, "processedQueue", "video.processed.queue");
-        setField(config, "processedRoutingKey", "video.processed");
-        setField(config, "errorQueue", "video.error.queue");
-        setField(config, "errorRoutingKey", "video.error");
+        setField(config, "dlq", "video.processing.dlq");
+        setField(config, "resultQueue", "video.result.queue");
+        setField(config, "resultRoutingKey", "video.result");
 
         TopicExchange exchange = config.exchange();
         Queue processingQueue = config.processingQueue();
         Binding processingBinding = config.processingBinding();
-        Queue processedQueue = config.processedQueue();
-        Binding processedBinding = config.processedBinding();
-        Queue errorQueue = config.errorQueue();
-        Binding errorBinding = config.errorBinding();
+        Queue deadLetterQueue = config.deadLetterQueue();
+        Queue resultQueue = config.resultQueue();
+        Binding resultBinding = config.resultBinding();
 
         assertEquals("video.exchange", exchange.getName());
 
@@ -37,15 +35,12 @@ class RabbitConfigTest {
         assertEquals("video.exchange", processingBinding.getExchange());
         assertEquals("video.processing", processingBinding.getRoutingKey());
 
-        assertEquals("video.processed.queue", processedQueue.getName());
-        assertEquals("video.processed.queue", processedBinding.getDestination());
-        assertEquals("video.exchange", processedBinding.getExchange());
-        assertEquals("video.processed", processedBinding.getRoutingKey());
+        assertEquals("video.processing.dlq", deadLetterQueue.getName());
 
-        assertEquals("video.error.queue", errorQueue.getName());
-        assertEquals("video.error.queue", errorBinding.getDestination());
-        assertEquals("video.exchange", errorBinding.getExchange());
-        assertEquals("video.error", errorBinding.getRoutingKey());
+        assertEquals("video.result.queue", resultQueue.getName());
+        assertEquals("video.result.queue", resultBinding.getDestination());
+        assertEquals("video.exchange", resultBinding.getExchange());
+        assertEquals("video.result", resultBinding.getRoutingKey());
     }
 
     private static void setField(Object target, String fieldName, String value) {

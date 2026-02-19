@@ -28,27 +28,25 @@ class VideoProcessingServiceImplTest {
     void processVideoShouldSendErrorWhenInputVideoDoesNotExist() {
         StubVideoStorageService videoStorageService = new StubVideoStorageService();
         RecordingVideoProcessedProducer videoProcessedProducer = new RecordingVideoProcessedProducer();
-        RecordingVideoProcessingErrorProducer videoProcessingErrorProducer = new RecordingVideoProcessingErrorProducer();
-        VideoProcessingServiceImpl service = createService(videoStorageService, videoProcessedProducer, videoProcessingErrorProducer);
+        VideoProcessingServiceImpl service = createService(videoStorageService, videoProcessedProducer);
         VideoProcessingRequest request = new VideoProcessingRequest("video-1", "user-1", tempDir.resolve("missing.mp4").toString());
 
         service.processVideo(request);
 
-        VideoProcessingError error = videoProcessingErrorProducer.error;
-        assertNotNull(error);
+        VideoResultMessage message = videoProcessedProducer.message;
+        assertNotNull(message);
         assertEquals(0, videoStorageService.storeCallCount);
-        assertEquals(0, videoProcessedProducer.callCount);
-        assertEquals("video-1", error.videoId());
-        assertEquals(VideoStatus.ERROR, error.status());
-        assertTrue(error.reason().contains("Input video not found"));
+        assertEquals(1, videoProcessedProducer.callCount);
+        assertEquals("video-1", message.videoId());
+        assertEquals(VideoStatus.ERROR, message.status());
+        assertTrue(message.errorMessage().contains("Input video not found"));
     }
 
     @Test
     void processVideoShouldSendResultDoneMessageWhenFramesAreExtractedAndStored() throws Exception {
         StubVideoStorageService videoStorageService = new StubVideoStorageService();
         RecordingVideoProcessedProducer videoProcessedProducer = new RecordingVideoProcessedProducer();
-        RecordingVideoProcessingErrorProducer videoProcessingErrorProducer = new RecordingVideoProcessingErrorProducer();
-        VideoProcessingServiceImpl service = createService(videoStorageService, videoProcessedProducer, videoProcessingErrorProducer);
+        VideoProcessingServiceImpl service = createService(videoStorageService, videoProcessedProducer);
         Path inputVideo = tempDir.resolve("input.mp4");
         Files.write(inputVideo, new byte[]{1, 2, 3});
         Path ffmpegScript = createFakeFfmpegScript(tempDir);
@@ -62,7 +60,6 @@ class VideoProcessingServiceImplTest {
 
         assertEquals(1, videoStorageService.storeCallCount);
         assertEquals(1, videoProcessedProducer.callCount);
-        assertEquals(0, videoProcessingErrorProducer.callCount);
 
         VideoResultMessage message = videoProcessedProducer.message;
         assertNotNull(message);
@@ -75,8 +72,7 @@ class VideoProcessingServiceImplTest {
     void processVideoShouldSendErrorWhenFfmpegFails() throws Exception {
         StubVideoStorageService videoStorageService = new StubVideoStorageService();
         RecordingVideoProcessedProducer videoProcessedProducer = new RecordingVideoProcessedProducer();
-        RecordingVideoProcessingErrorProducer videoProcessingErrorProducer = new RecordingVideoProcessingErrorProducer();
-        VideoProcessingServiceImpl service = createService(videoStorageService, videoProcessedProducer, videoProcessingErrorProducer);
+        VideoProcessingServiceImpl service = createService(videoStorageService, videoProcessedProducer);
         Path inputVideo = tempDir.resolve("input-failed.mp4");
         Files.write(inputVideo, new byte[]{1, 2, 3});
         Path ffmpegScript = createFailingFfmpegScript(tempDir);
@@ -86,18 +82,17 @@ class VideoProcessingServiceImplTest {
         service.processVideo(request);
 
         assertEquals(0, videoStorageService.storeCallCount);
-        assertEquals(0, videoProcessedProducer.callCount);
-        assertEquals(1, videoProcessingErrorProducer.callCount);
-        assertNotNull(videoProcessingErrorProducer.error);
-        assertTrue(videoProcessingErrorProducer.error.reason().contains("FFmpeg failed (exit 1)"));
+        assertEquals(1, videoProcessedProducer.callCount);
+        assertNotNull(videoProcessedProducer.message);
+        assertEquals(VideoStatus.ERROR, videoProcessedProducer.message.status());
+        assertTrue(videoProcessedProducer.message.errorMessage().contains("FFmpeg failed (exit 1)"));
     }
 
     @Test
     void processVideoShouldSendErrorWhenNoFramesAreExtracted() throws Exception {
         StubVideoStorageService videoStorageService = new StubVideoStorageService();
         RecordingVideoProcessedProducer videoProcessedProducer = new RecordingVideoProcessedProducer();
-        RecordingVideoProcessingErrorProducer videoProcessingErrorProducer = new RecordingVideoProcessingErrorProducer();
-        VideoProcessingServiceImpl service = createService(videoStorageService, videoProcessedProducer, videoProcessingErrorProducer);
+        VideoProcessingServiceImpl service = createService(videoStorageService, videoProcessedProducer);
         Path inputVideo = tempDir.resolve("input-empty.mp4");
         Files.write(inputVideo, new byte[]{1, 2, 3});
         Path ffmpegScript = createNoFrameFfmpegScript(tempDir);
@@ -107,18 +102,17 @@ class VideoProcessingServiceImplTest {
         service.processVideo(request);
 
         assertEquals(0, videoStorageService.storeCallCount);
-        assertEquals(0, videoProcessedProducer.callCount);
-        assertEquals(1, videoProcessingErrorProducer.callCount);
-        assertNotNull(videoProcessingErrorProducer.error);
-        assertTrue(videoProcessingErrorProducer.error.reason().contains("No frames extracted from video"));
+        assertEquals(1, videoProcessedProducer.callCount);
+        assertNotNull(videoProcessedProducer.message);
+        assertEquals(VideoStatus.ERROR, videoProcessedProducer.message.status());
+        assertTrue(videoProcessedProducer.message.errorMessage().contains("No frames extracted from video"));
     }
 
     @Test
     void processVideoShouldUseStoredPathWhenStorageBaseUrlIsBlank() throws Exception {
         StubVideoStorageService videoStorageService = new StubVideoStorageService();
         RecordingVideoProcessedProducer videoProcessedProducer = new RecordingVideoProcessedProducer();
-        RecordingVideoProcessingErrorProducer videoProcessingErrorProducer = new RecordingVideoProcessingErrorProducer();
-        VideoProcessingServiceImpl service = createService(videoStorageService, videoProcessedProducer, videoProcessingErrorProducer);
+        VideoProcessingServiceImpl service = createService(videoStorageService, videoProcessedProducer);
         Path inputVideo = tempDir.resolve("input-blank-base.mp4");
         Files.write(inputVideo, new byte[]{1, 2, 3});
         Path ffmpegScript = createFakeFfmpegScript(tempDir);
@@ -132,7 +126,6 @@ class VideoProcessingServiceImplTest {
         assertEquals(1, videoProcessedProducer.callCount);
         assertNotNull(videoProcessedProducer.message);
         assertEquals("/tmp/storage/raw_frames.zip", videoProcessedProducer.message.zipPath());
-        assertEquals(0, videoProcessingErrorProducer.callCount);
     }
 
     @Test
@@ -140,8 +133,7 @@ class VideoProcessingServiceImplTest {
         StubVideoStorageService videoStorageService = new StubVideoStorageService();
         videoStorageService.throwStorageException = true;
         RecordingVideoProcessedProducer videoProcessedProducer = new RecordingVideoProcessedProducer();
-        RecordingVideoProcessingErrorProducer videoProcessingErrorProducer = new RecordingVideoProcessingErrorProducer();
-        VideoProcessingServiceImpl service = createService(videoStorageService, videoProcessedProducer, videoProcessingErrorProducer);
+        VideoProcessingServiceImpl service = createService(videoStorageService, videoProcessedProducer);
         Path inputVideo = tempDir.resolve("input-storage-fail.mp4");
         Files.write(inputVideo, new byte[]{1, 2, 3});
         Path ffmpegScript = createFakeFfmpegScript(tempDir);
@@ -151,21 +143,19 @@ class VideoProcessingServiceImplTest {
         service.processVideo(request);
 
         assertEquals(1, videoStorageService.storeCallCount);
-        assertEquals(0, videoProcessedProducer.callCount);
-        assertEquals(1, videoProcessingErrorProducer.callCount);
-        assertNotNull(videoProcessingErrorProducer.error);
-        assertEquals("FileStorageException", videoProcessingErrorProducer.error.reason());
+        assertEquals(1, videoProcessedProducer.callCount);
+        assertNotNull(videoProcessedProducer.message);
+        assertEquals(VideoStatus.ERROR, videoProcessedProducer.message.status());
+        assertEquals("FileStorageException", videoProcessedProducer.message.errorMessage());
     }
 
     private VideoProcessingServiceImpl createService(
         VideoStorageService videoStorageService,
-        VideoProcessedProducer videoProcessedProducer,
-        VideoProcessingErrorProducer videoProcessingErrorProducer
+        VideoProcessedProducer videoProcessedProducer
     ) {
         VideoProcessingServiceImpl service = new VideoProcessingServiceImpl(
             videoStorageService,
-            videoProcessedProducer,
-            videoProcessingErrorProducer
+            videoProcessedProducer
         );
         setField(service, "framesFps", 30);
         setField(service, "storageBaseUrl", "");
@@ -267,21 +257,6 @@ class VideoProcessingServiceImplTest {
         public void sendVideoProcessedMessage(VideoResultMessage videoResultMessage) {
             callCount++;
             message = videoResultMessage;
-        }
-    }
-
-    private static class RecordingVideoProcessingErrorProducer extends VideoProcessingErrorProducer {
-        private int callCount;
-        private VideoProcessingError error;
-
-        private RecordingVideoProcessingErrorProducer() {
-            super(null, null);
-        }
-
-        @Override
-        public void sendError(VideoProcessingError error) {
-            callCount++;
-            this.error = error;
         }
     }
 }

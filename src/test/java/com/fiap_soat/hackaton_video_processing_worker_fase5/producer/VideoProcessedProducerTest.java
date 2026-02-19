@@ -20,9 +20,9 @@ class VideoProcessedProducerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         VideoProcessedProducer producer = new VideoProcessedProducer(rabbitTemplate, objectMapper);
         setField(producer, "exchange", "video.exchange");
-        setField(producer, "processedRoutingKey", "video.processed");
+        setField(producer, "resultRoutingKey", "video.processed");
 
-        VideoResultMessage payload = new VideoResultMessage("video-1", "/tmp/video-1.zip", VideoStatus.DONE);
+        VideoResultMessage payload = new VideoResultMessage("video-1", "/tmp/video-1.zip", VideoStatus.DONE, null);
         producer.sendVideoProcessedMessage(payload);
 
         assertEquals("video.exchange", rabbitTemplate.exchange);
@@ -31,10 +31,7 @@ class VideoProcessedProducerTest {
         assertEquals("application/json", rabbitTemplate.message.getMessageProperties().getContentType());
         assertEquals("utf-8", rabbitTemplate.message.getMessageProperties().getContentEncoding());
         String json = new String(rabbitTemplate.message.getBody());
-        assertEquals(
-            "{\"videoId\":\"video-1\",\"zipPath\":\"/tmp/video-1.zip\",\"status\":\"DONE\"}",
-            json
-        );
+        assertEquals("{\"videoId\":\"video-1\",\"zipPath\":\"/tmp/video-1.zip\",\"status\":\"DONE\",\"errorMessage\":null}", json);
     }
 
     private static void setField(Object target, String fieldName, String value) {
