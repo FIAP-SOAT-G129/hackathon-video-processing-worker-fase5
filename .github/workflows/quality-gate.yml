@@ -1,0 +1,12 @@
+name: Quality Gate Checks
+
+on:
+  pull_request:
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  quality-gate:
+    uses: ./.github/workflows/ci-build-test.yml
