@@ -1,15 +1,31 @@
+version: '3.8'
+
 services:
+  worker:
+    build: .
+    container_name: video-processing-worker
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+    depends_on:
+      - rabbitmq
+    networks:
+      - video-processing-network
+
   rabbitmq:
     image: rabbitmq:3-management
-    container_name: rabbitmq
+    hostname: rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - video-processing-network
+
+networks:
+  video-processing-network:
+    driver: bridge
 
 volumes:
   rabbitmq_data:

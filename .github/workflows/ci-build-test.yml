@@ -1,0 +1,70 @@
+name: CI - Build and Test
+
+on:
+  workflow_call:
+
+env:
+  JAVA_VERSION: 21
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Cache Maven
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2
+
+      - name: Build + Unit Tests
+        run: mvn clean verify
+
+      - name: Upload JaCoCo Coverage Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
+          retention-days: 7
+
+      - name: Generate coverage badge
+        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: cicirello/jacoco-badge-generator@v2.12.1
+        with:
+          generate-coverage-badge: true
+          generate-branches-badge: true
+
+      - name: Commit and push the badges
+        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: EndBug/add-and-commit@v7
+        with:
+          default_author: github_actions
+          message: "chore(badges): commit badges"
+          add: "*.svg"
+
+      - name: Jacoco Report - PR Comment
+        if: github.event_name == 'pull_request'
+        uses: madrapps/jacoco-report@v1.7.2
+        with:
+          paths: "target/site/jacoco/jacoco.xml"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 80
+          min-coverage-changed-files: 80
+          update-comment: true
+          comment-type: both
+          title: "JaCoCo Coverage Report"
+          skip-if-no-changes: false
+          continue-on-error: true
