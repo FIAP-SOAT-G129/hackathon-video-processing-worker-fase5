@@ -1,11 +1,12 @@
 spring:
   application:
     name: hackaton-video-processing-worker-fase5
+
   rabbitmq:
-    host: ${SPRING_RABBITMQ_HOST:localhost}
-    port: ${SPRING_RABBITMQ_PORT:5672}
-    username: ${SPRING_RABBITMQ_USERNAME:guest}
-    password: ${SPRING_RABBITMQ_PASSWORD:guest}
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
 
 app:
   rabbit:
@@ -15,10 +16,13 @@ app:
     result-routing-key: video.processing.result
     processing-dlq: video.processing.dlq
     exchange: video.processing.exchange
+
   video:
     frames-fps: 30
+
   ffmpeg:
     path: ffmpeg
+
   storage:
-    local-path: ${APP_STORAGE_LOCAL_PATH:/Users/mariomendonca/Desktop/frames-testes}
+    local-path: ${LOCAL_STORAGE_PATH:/tmp/zips}
     base-url: ""
