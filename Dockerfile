@@ -1,15 +1,12 @@
-FROM maven:3.9.9-eclipse-temurin-21 AS builder
+FROM maven:3.9.9-eclipse-temurin-21-jammy AS build
 
-WORKDIR /workspace
+WORKDIR /app
 
-COPY pom.xml mvnw mvnw.cmd ./
-COPY .mvn .mvn
+COPY pom.xml .
 
-RUN ./mvnw -q -DskipTests dependency:go-offline
+COPY src ./src
 
-COPY src src
-
-RUN ./mvnw -q -DskipTests package
+RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:21-jre-jammy
 
@@ -19,11 +16,11 @@ RUN apt-get update \
 
 WORKDIR /app
 
-COPY --from=builder /workspace/target/*-SNAPSHOT.jar /app/app.jar
+COPY --from=build /app/target/*.jar app.jar
 
 RUN useradd -u 10001 -r -g root app \
     && chown -R app:root /app
 
 USER app
 
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
