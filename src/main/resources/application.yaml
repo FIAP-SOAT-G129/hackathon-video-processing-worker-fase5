@@ -20,5 +20,5 @@ app:
   ffmpeg:
     path: ffmpeg
   storage:
-    local-path: ${APP_STORAGE_LOCAL_PATH:/Users/mariomendonca/Desktop/frames-testes}
+    local-path: ${APP_STORAGE_LOCAL_PATH:./temp_storage}
     base-url: ""
