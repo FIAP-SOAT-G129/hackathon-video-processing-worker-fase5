@@ -1,36 +1,25 @@
 version: '3.8'
 
 services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    hostname: rabbitmq
-    container_name: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
+  worker:
+    build: .
+    container_name: video-processing-worker
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+    depends_on:
+      - rabbitmq
     networks:
       - video-processing-network
 
-  worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: video-processing-worker
-    depends_on:
-      - rabbitmq
-    environment:
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: guest
-      SPRING_RABBITMQ_PASSWORD: guest
-      APP_STORAGE_LOCAL_PATH: /app/temp_storage # Caminho dentro do container para armazenamento temporário
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
     volumes:
-      - worker_temp_storage:/app/temp_storage # Volume para persistir dados temporários do worker
+      - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - video-processing-network
 
@@ -40,4 +29,3 @@ networks:
 
 volumes:
   rabbitmq_data:
-  worker_temp_storage:
