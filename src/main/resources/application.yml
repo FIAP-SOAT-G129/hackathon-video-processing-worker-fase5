@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: hackaton-video-processing-worker
+
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
+
+storage:
+  base-path: ${VIDEOS_STORAGE_PATH:/tmp/fastfood}
+  video-path: videos
+  zip-path: zips
+  allowed-video-extensions:
+    - .mp4
+    - .mov
+    - .avi
+  allowed-zip-extensions:
+    - .zip
+
+app:
+  video-processing:
+    frames-fps: 30
+  ffmpeg:
+    path: ffmpeg
+  storage:
+    local-path: ${APP_STORAGE_LOCAL_PATH:./temp_storage}
+    base-url: ""
