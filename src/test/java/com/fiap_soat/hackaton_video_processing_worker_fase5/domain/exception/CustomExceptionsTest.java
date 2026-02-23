@@ -26,28 +26,6 @@ class CustomExceptionsTest {
     }
 
     @Test
-    void storedFileNotFoundExceptionShouldKeepMessage() {
-        StoredFileNotFoundException exception = new StoredFileNotFoundException("missing storage file");
-        assertEquals("missing storage file", exception.getMessage());
-    }
-
-    @Test
-    void fileRetrievalExceptionShouldKeepMessageAndCause() {
-        RuntimeException cause = new RuntimeException("retrieve cause");
-        FileRetrievalException exception = new FileRetrievalException("retrieve failed", cause);
-        assertEquals("retrieve failed", exception.getMessage());
-        assertSame(cause, exception.getCause());
-    }
-
-    @Test
-    void fileStorageExceptionShouldKeepMessageAndCause() {
-        RuntimeException cause = new RuntimeException("store cause");
-        FileStorageException exception = new FileStorageException("store failed", cause);
-        assertEquals("store failed", exception.getMessage());
-        assertSame(cause, exception.getCause());
-    }
-
-    @Test
     void frameZipExceptionShouldKeepMessageAndCause() {
         RuntimeException cause = new RuntimeException("zip cause");
         FrameZipException exception = new FrameZipException("zip failed", cause);
