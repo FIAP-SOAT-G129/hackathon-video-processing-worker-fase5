@@ -244,6 +244,11 @@ class VideoProcessingServiceImplTest {
         public InputStream retrieve(String storagePath) {
             throw new UnsupportedOperationException("retrieve is not used in these tests");
         }
+
+        @Override
+        public void delete(String storagePath) {
+            throw new UnsupportedOperationException("delete is not used in these tests");
+        }
     }
 
     private static class RecordingVideoProcessedProducer extends VideoProcessedProducer {
