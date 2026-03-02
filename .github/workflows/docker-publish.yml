@@ -13,7 +13,8 @@ on:
         required: true
 
 env:
-  STORAGE_LIB_REPO: ${{ vars.STORAGE_LIB_REPO || 'FIAP-SOAT-G129/hackathon-storage-lib' }}
+  STORAGE_LIB_REPO_TOKEN: ${{ secrets.STORAGE_LIB_REPO_TOKEN || github.token }}
+  STORAGE_LIB_REPO: ${{ vars.STORAGE_LIB_REPO || 'FIAP-SOAT-G129/hackathon-storage-lib-fase5' }}
   STORAGE_LIB_REF: ${{ vars.STORAGE_LIB_REF || 'main' }}
 
 jobs:
@@ -28,8 +29,8 @@ jobs:
         with:
           repository: ${{ env.STORAGE_LIB_REPO }}
           ref: ${{ env.STORAGE_LIB_REF }}
-          token: ${{ secrets.STORAGE_LIB_REPO_TOKEN || github.token }}
-          path: _deps/hackathon-storage-lib
+          token: ${{ env.STORAGE_LIB_REPO_TOKEN }}
+          path: _deps/storage-lib
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3

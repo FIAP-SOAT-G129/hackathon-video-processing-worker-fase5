@@ -56,9 +56,9 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>br.com.fiap</groupId>
-			<artifactId>hackathon-storage-lib</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<groupId>com.fiap.soat</groupId>
+			<artifactId>storage-lib</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
