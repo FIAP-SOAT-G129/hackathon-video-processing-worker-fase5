@@ -1,10 +1,10 @@
 package com.fiap_soat.hackaton_video_processing_worker_fase5.application.service;
 
+import com.fiap.soat.storage.VideoStorageService;
+import com.fiap.soat.storage.exception.FileStorageException;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.adapter.out.messaging.rabbit.VideoResultMessage;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.adapter.in.dto.VideoProcessingRequest;
-import com.fiap_soat.hackaton_video_processing_worker_fase5.application.port.out.VideoStorageService;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.domain.model.VideoStatus;
-import com.fiap_soat.hackaton_video_processing_worker_fase5.domain.exception.FileStorageException;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.adapter.out.messaging.rabbit.VideoProcessedProducer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -232,7 +232,7 @@ class VideoProcessingServiceImplTest {
         private boolean throwStorageException;
 
         @Override
-        public String store(InputStream inputStream, String fileName) throws FileStorageException {
+        public String store(InputStream inputStream, String fileName) {
             storeCallCount++;
             if (throwStorageException) {
                 throw new FileStorageException(" ", new IOException("simulated storage failure"));
@@ -243,6 +243,11 @@ class VideoProcessingServiceImplTest {
         @Override
         public InputStream retrieve(String storagePath) {
             throw new UnsupportedOperationException("retrieve is not used in these tests");
+        }
+
+        @Override
+        public void delete(String storagePath) {
+            throw new UnsupportedOperationException("delete is not used in these tests");
         }
     }
 

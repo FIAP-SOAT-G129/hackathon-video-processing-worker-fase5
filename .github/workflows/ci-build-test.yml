@@ -5,6 +5,9 @@ on:
 
 env:
   JAVA_VERSION: 21
+  STORAGE_LIB_REPO_TOKEN: ${{ secrets.STORAGE_LIB_REPO_TOKEN || github.token }}
+  STORAGE_LIB_REPO: ${{ vars.STORAGE_LIB_REPO || 'FIAP-SOAT-G129/hackathon-storage-lib-fase5' }}
+  STORAGE_LIB_REF: ${{ vars.STORAGE_LIB_REF || 'main' }}
 
 jobs:
   build:
@@ -29,6 +32,17 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-m2
+
+      - name: Checkout storage lib
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.STORAGE_LIB_REPO }}
+          ref: ${{ env.STORAGE_LIB_REF }}
+          token: ${{ env.STORAGE_LIB_REPO_TOKEN }}
+          path: _deps/storage-lib
+
+      - name: Install storage lib in local Maven repo
+        run: mvn -f _deps/storage-lib/pom.xml -DskipTests clean install
 
       - name: Build + Unit Tests
         run: mvn clean verify
