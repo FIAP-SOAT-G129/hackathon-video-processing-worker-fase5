@@ -7,7 +7,7 @@ COPY pom.xml .
 COPY src ./src
 COPY _deps ./_deps
 
-RUN mvn -f _deps/hackathon-storage-lib/pom.xml -DskipTests clean install \
+RUN mvn -f _deps/storage-lib/pom.xml -DskipTests clean install \
     && mvn clean package -DskipTests
 
 FROM eclipse-temurin:21-jre-jammy

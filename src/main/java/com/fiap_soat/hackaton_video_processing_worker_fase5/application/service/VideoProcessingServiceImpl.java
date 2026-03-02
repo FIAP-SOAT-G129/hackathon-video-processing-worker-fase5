@@ -1,6 +1,6 @@
 package com.fiap_soat.hackaton_video_processing_worker_fase5.application.service;
 
-import br.com.fiap.storage.VideoStorageService;
+import com.fiap.soat.storage.VideoStorageService;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.application.port.in.VideoProcessingService;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.adapter.out.messaging.rabbit.VideoResultMessage;
 import com.fiap_soat.hackaton_video_processing_worker_fase5.adapter.in.dto.VideoProcessingRequest;
